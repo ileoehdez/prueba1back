@@ -42,16 +42,47 @@ if (empty($id)) {
 
 $sql = "DELETE FROM tareas WHERE id = ?";
 
+// if ($stmt = $conn->prepare($sql)) {
+//     $stmt->bind_param("i", $id);
+
+//     if ($stmt->execute()) {
+//         if ($stmt->affected_rows > 0) {
+//             http_response_code(200);
+//             echo json_encode(array("message" => "Tarea eliminada exitosamente."));
+//         } else {
+//             http_response_code(404); 
+//             echo json_encode(array("message" => "No se encontró la tarea con el ID proporcionado."));
+//         }
+//     } else {
+//         http_response_code(500);
+//         echo json_encode(array("message" => "Error al eliminar la tarea: " . $stmt->error));
+//     }
+
+//     $stmt->close();
+// } else {
+//     http_response_code(500);
+//     echo json_encode(array("message" => "Error en la consulta: " . $conn->error));
+// }
+
+$id = $data->id;
+$tarea = $data->tarea;
+$tipo = $data->tipo;
+$prioridad = $data->prioridad;
+$descripcion = $data->descripcion;
+$estado = $data->estado;
+
+$sql = "DELETE tareas SET tarea = ?, tipo = ?, prioridad, descripcion = ?, estado = ? WHERE id = ?";
+
 if ($stmt = $conn->prepare($sql)) {
-    $stmt->bind_param("i", $id);
+    $stmt->bind_param("sssssi", $tarea, $tipo, $prioridad, $descripcion, $estado, $id);
 
     if ($stmt->execute()) {
         if ($stmt->affected_rows > 0) {
             http_response_code(200);
-            echo json_encode(array("message" => "Tarea eliminada exitosamente."));
+            echo json_encode(array("message" => "Tarea actualizada exitosamente."));
         } else {
-            http_response_code(404); 
-            echo json_encode(array("message" => "No se encontró la tarea con el ID proporcionado."));
+            http_response_code(404);
+            echo json_encode(array("message" => "No se encontró la tarea con el ID proporcionado o no se realizaron cambios."));
         }
     } else {
         http_response_code(500);
@@ -61,7 +92,26 @@ if ($stmt = $conn->prepare($sql)) {
     $stmt->close();
 } else {
     http_response_code(500);
-    echo json_encode(array("message" => "Error en la preparación de la consulta: " . $conn->error));
+    echo json_encode(array("message" => "Error en la consulta: " . $conn->error));
+}
+
+if($_POST["tareas"] == 'delete_tarea'){
+
+	$id_tarea = $_POST["id_tarea"];
+	$tarea = $_POST["tarea"];
+	$tipo = $_POST["tipo"];
+	$prioridad = $_POST["prioridad"];
+	$descripcion = $_POST["descripcion"];
+    $estado = $_POST["estado"];
+
+	$row = mysql_fetch_array(mysql_query("SELECT id_tarea FROM tareas WHERE id_tarea = '$id_tarea'"));
+
+	if(!empty($row["id_tarea"])){
+		mysql_query("DELETE tareas SET tarea = '$tarea', tipo = '$tipo', prioridad = '$prioridad', descripcion = '$descripcion', estado ='$estado' WHERE id_tarea = '$id_tarea'");
+	}
+} else {
+    http_response_code(500);
+    echo json_encode(array("message" => "Error en la consulta: " . $conn->error));
 }
 
 // Cierra la conexión a la base de datos

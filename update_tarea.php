@@ -4,6 +4,8 @@ header("Access-Control-Allow-Methods: GET, POST, PUT, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
 header("Content-Type: application/json; charset=UTF-8");
 
+include 'db_config.php';
+
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit();
@@ -59,7 +61,26 @@ if ($stmt = $conn->prepare($sql)) {
     $stmt->close();
 } else {
     http_response_code(500);
-    echo json_encode(array("message" => "Error en la preparación de la consulta: " . $conn->error));
+    echo json_encode(array("message" => "Error en la consulta: " . $conn->error));
+}
+
+if($_POST["tareas"] == 'update_tarea'){
+
+	$id_tarea = $_POST["id_tarea"];
+	$tarea = $_POST["tarea"];
+	$tipo = $_POST["tipo"];
+	$prioridad = $_POST["prioridad"];
+	$descripcion = $_POST["descripcion"];
+    $estado = $_POST["estado"];
+
+	$row = mysql_fetch_array(mysql_query("SELECT id_tarea FROM tareas WHERE id_tarea = '$id_tarea'"));
+
+	if(!empty($row["id_tarea"])){
+		mysql_query("UPDATE tareas SET tarea = '$tarea', tipo = '$tipo', prioridad = '$prioridad', descripcion = '$descripcion', estado ='$estado' WHERE id_tarea = '$id_tarea'");
+	}
+} else {
+    http_response_code(500);
+    echo json_encode(array("message" => "Error en la consulta: " . $conn->error));
 }
 
 $conn->close();
